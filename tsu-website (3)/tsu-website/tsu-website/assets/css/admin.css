@@ -195,6 +195,12 @@ input, select, textarea { font: inherit; }
 .gal-admin-item { position: relative; border-radius: 10px; overflow: hidden; background: var(--cream); border: 1px solid var(--border); }
 .gal-admin-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
 .gal-admin-cap { padding: 6px 8px; font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gal-cap-input {
+  width: 100%; padding: 5px 8px; border: none; border-top: 1px solid var(--border);
+  font-size: .82rem; color: var(--text); background: #fff; font-family: var(--font);
+  border-radius: 0 0 10px 10px;
+}
+.gal-cap-input:focus { outline: none; background: #f0f7ff; border-color: var(--teal); }
 .gal-del { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: rgba(180,35,24,.85); color: #fff; border: none; font-size: 13px; display: grid; place-items: center; cursor: pointer; }
 .gal-del:hover { background: var(--danger); }
 @media (max-width: 480px) { .gal-admin-grid { grid-template-columns: repeat(2, 1fr); } }

@@ -381,9 +381,19 @@
       div.className = 'gal-admin-item';
       div.innerHTML =
         '<img src="' + esc(item.src) + '" alt="' + esc(item.cap) + '">' +
-        '<div class="gal-admin-cap">' + esc(item.cap) + '</div>' +
+        '<input class="gal-cap-input" data-i="' + i + '" value="' + esc(item.cap) + '" placeholder="Caption...">' +
         '<button class="photo-item__del gal-del" data-i="' + i + '" title="Delete">✕</button>';
       grid.appendChild(div);
+    });
+    // Save caption on blur
+    grid.querySelectorAll('.gal-cap-input').forEach(function(inp) {
+      inp.addEventListener('blur', async function() {
+        var items = getGallery();
+        items[parseInt(inp.dataset.i)].cap = inp.value.trim();
+        siteData.gallery = items;
+        await saveData({ gallery: items });
+        toast('Caption saved');
+      });
     });
     grid.querySelectorAll('.gal-del').forEach(function(btn) {
       btn.addEventListener('click', async function() {
