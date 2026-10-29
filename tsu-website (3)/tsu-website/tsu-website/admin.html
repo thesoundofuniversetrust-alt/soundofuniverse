@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TSU Admin</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="screen-login" class="screen screen--center">
+  <div class="auth-card">
+    <img src="assets/img/logo.png" alt="TSU" class="auth-logo">
+    <h1 class="auth-title">Owner Login</h1>
+    <p class="auth-sub">The Sound of Universe Trust</p>
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="l-email">Email</label>
+        <input id="l-email" type="email" autocomplete="email" required placeholder="owner@email.com">
+      </div>
+      <div class="field">
+        <label for="l-pass">Password</label>
+        <input id="l-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <p class="auth-err" id="login-err"></p>
+      <button type="submit" class="btn btn--primary btn--block" id="login-btn">Continue</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── OTP SCREEN ── -->
+<div id="screen-otp" class="screen screen--center" hidden>
+  <div class="auth-card">
+    <img src="assets/img/logo.png" alt="TSU" class="auth-logo">
+    <h1 class="auth-title">Enter OTP</h1>
+    <p class="auth-sub" id="otp-hint">A 6-digit code was sent to your email.</p>
+    <form id="otp-form" novalidate>
+      <div class="field">
+        <label for="l-otp">One-Time Password</label>
+        <input id="l-otp" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required placeholder="123456">
+      </div>
+      <p class="auth-err" id="otp-err"></p>
+      <button type="submit" class="btn btn--primary btn--block" id="otp-btn">Verify</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="screen-dash" class="screen" hidden>
+  <header class="dash-header">
+    <div class="dash-header__inner">
+      <a href="index.html" class="dash-brand">
+        <img src="assets/img/logo.png" alt="TSU" width="40" height="40">
+        <span>TSU Admin</span>
+      </a>
+      <nav class="dash-nav">
+        <button class="dash-nav__btn is-active" data-tab="activities">Activities</button>
+        <button class="dash-nav__btn" data-tab="services">Services</button>
+      </nav>
+      <button class="btn btn--outline btn--sm" id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <main class="dash-main">
+
+    <!-- ACTIVITIES TAB -->
+    <div id="tab-activities" class="tab-panel">
+      <div class="panel-head">
+        <h2>Activities</h2>
+        <button class="btn btn--primary btn--sm" id="new-activity-btn">+ New Activity</button>
+      </div>
+
+      <!-- Logo editor -->
+      <div class="logo-editor card">
+        <h3>Site Logo</h3>
+        <div class="logo-editor__row">
+          <img id="logo-preview" src="assets/img/logo.png" alt="Logo" class="logo-preview">
+          <div>
+            <label class="upload-btn">
+              <input type="file" id="logo-upload" accept="image/*">
+              Change Logo
+            </label>
+            <p class="hint">Recommended: square PNG with transparent background</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="activities-list" class="cards-list"></div>
+    </div>
+
+    <!-- SERVICES TAB -->
+    <div id="tab-services" class="tab-panel" hidden>
+      <div class="panel-head">
+        <h2>Services</h2>
+        <button class="btn btn--primary btn--sm" id="new-service-btn">+ New Service</button>
+      </div>
+      <div id="services-list" class="cards-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── ACTIVITY EDITOR MODAL ── -->
+<dialog id="modal-activity" class="modal">
+  <div class="modal__head">
+    <h2 id="modal-activity-title">Edit Activity</h2>
+    <button class="modal__close" id="close-activity-modal">✕</button>
+  </div>
+  <div class="modal__body">
+    <input type="hidden" id="act-id">
+    <div class="field">
+      <label for="act-title">Title</label>
+      <input id="act-title" type="text" required>
+    </div>
+    <div class="field">
+      <label for="act-desc">Description</label>
+      <textarea id="act-desc" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label>Photos</label>
+      <div id="act-photos-grid" class="photos-grid"></div>
+      <label class="upload-btn">
+        <input type="file" id="act-photo-upload" accept="image/*" multiple>
+        + Add Photos
+      </label>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <button class="btn btn--outline" id="delete-activity-btn">Delete Activity</button>
+    <button class="btn btn--primary" id="save-activity-btn">Save</button>
+  </div>
+</dialog>
+
+<!-- ── SERVICE EDITOR MODAL ── -->
+<dialog id="modal-service" class="modal">
+  <div class="modal__head">
+    <h2 id="modal-service-title">Edit Service</h2>
+    <button class="modal__close" id="close-service-modal">✕</button>
+  </div>
+  <div class="modal__body">
+    <input type="hidden" id="svc-id">
+    <div class="field">
+      <label for="svc-title">Title</label>
+      <input id="svc-title" type="text" required>
+    </div>
+    <div class="field">
+      <label for="svc-desc">Description</label>
+      <textarea id="svc-desc" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label for="svc-status">Status</label>
+      <select id="svc-status">
+        <option value="upcoming">Upcoming</option>
+        <option value="done">Completed</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="svc-location">Location</label>
+      <input id="svc-location" type="text">
+    </div>
+    <div class="field">
+      <label for="svc-action-label">Button Label</label>
+      <select id="svc-action-label">
+        <option value="Support this">Support this</option>
+        <option value="Register now">Register now</option>
+        <option value="View photos">View photos</option>
+        <option value="Learn more">Learn more</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="svc-action-link">Button Link</label>
+      <input id="svc-action-link" type="text" placeholder="#donate or https://...">
+    </div>
+    <div class="field">
+      <label>Cover Photo</label>
+      <div class="cover-preview-wrap">
+        <img id="svc-cover-preview" src="" alt="" class="cover-preview" style="display:none">
+      </div>
+      <label class="upload-btn">
+        <input type="file" id="svc-cover-upload" accept="image/*">
+        Change Cover Photo
+      </label>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <button class="btn btn--outline" id="delete-service-btn">Delete Service</button>
+    <button class="btn btn--primary" id="save-service-btn">Save</button>
+  </div>
+</dialog>
+
+<div class="toast" id="admin-toast"></div>
+
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

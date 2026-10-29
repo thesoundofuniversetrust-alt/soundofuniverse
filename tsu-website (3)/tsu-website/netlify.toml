@@ -1,0 +1,23 @@
+[build]
+  publish = "tsu-website"
+  functions = "netlify/functions"
+  command = "npm install"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["netlify/functions/**"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# ── Environment variables ──────────────────────────────────────────────────────
+# Set these in Netlify → Site Settings → Environment Variables:
+#
+#   RESEND_API_KEY          = (your Resend API key)
+#   CLOUDINARY_CLOUD_NAME   = hysi8ysy
+#   CLOUDINARY_API_KEY      = (your Cloudinary API key)
+#   CLOUDINARY_API_SECRET   = (your Cloudinary API secret)
+#   SESSION_SECRET          = (any long random string you choose)
+# ──────────────────────────────────────────────────────────────────────────────

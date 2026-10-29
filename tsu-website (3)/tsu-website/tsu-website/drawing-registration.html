@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drawing Competition Registration – The Sound of Universe Trust</title>
+  <meta name="description" content="Register for the Drawing Competition organised by The Sound of Universe Trust, Ranipet.">
+  <meta name="theme-color" content="#212C5C">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design tokens (matches main site) ───────────────────────── */
+    :root {
+      --navy:       #212C5C;
+      --navy-900:   #151C3D;
+      --purple:     #61367F;
+      --magenta:    #CE2A7A;
+      --magenta-600:#B01F66;
+      --teal:       #0E6B63;
+      --teal-700:   #0A544E;
+      --green:      #089C6C;
+      --sky:        #0A7FC8;
+      --cream:      #FBF8EE;
+      --cream-2:    #F4EFE0;
+      --bg:         #FFFFFF;
+      --text:       #1B2240;
+      --text-muted: #4A5170;
+      --border:     #E6E3DA;
+      --primary:    var(--magenta);
+      --ring:       #0A7FC8;
+      --font-head:  'Lexend', 'Noto Sans Tamil', system-ui, sans-serif;
+      --font-body:  'Source Sans 3', 'Noto Sans Tamil', system-ui, sans-serif;
+      --r-sm: 10px; --r-md: 16px; --r-lg: 24px; --r-pill: 999px;
+      --sh-1: 0 1px 2px rgba(21,28,61,.06), 0 2px 8px rgba(21,28,61,.05);
+      --sh-2: 0 6px 24px rgba(21,28,61,.10);
+      --sh-3: 0 20px 50px rgba(21,28,61,.18);
+      --ease-out: cubic-bezier(.22,1,.36,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; height: auto; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; background: none; border: 0; padding: 0; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    h1,h2,h3,h4 { font-family: var(--font-head); color: var(--navy); line-height: 1.2; margin: 0; }
+    p { margin: 0 0 1em; }
+    p:last-child { margin-bottom: 0; }
+    :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; border-radius: 6px; }
+
+    /* ── Layout ───────────────────────────────────────────────────── */
+    .page-wrap {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background:
+        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(97,54,127,.12), transparent),
+        var(--cream);
+    }
+
+    /* ── Top bar ──────────────────────────────────────────────────── */
+    .topbar {
+      background: var(--navy);
+      color: #DDE1F2;
+      font-size: .875rem;
+      padding: 0 clamp(16px,4vw,32px);
+    }
+    .topbar__inner {
+      max-width: 800px;
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 40px;
+      flex-wrap: wrap;
+    }
+    .topbar a {
+      color: #DDE1F2;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: color .15s;
+    }
+    .topbar a:hover { color: #fff; }
+    .topbar a svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── Card wrapper ─────────────────────────────────────────────── */
+    .main {
+      padding: clamp(32px,6vw,72px) clamp(16px,4vw,24px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .form-card {
+      width: 100%;
+      max-width: 680px;
+      background: #fff;
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh-3);
+      overflow: hidden;
+    }
+
+    /* ── Card header ──────────────────────────────────────────────── */
+    .card-header {
+      background: linear-gradient(135deg, var(--purple) 0%, var(--navy) 60%);
+      padding: clamp(28px,5vw,44px) clamp(24px,5vw,40px) clamp(24px,4vw,36px);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 0);
+      background-size: 20px 20px;
+      pointer-events: none;
+    }
+    .card-header__top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .card-header__logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      padding: 6px;
+      flex: none;
+    }
+    .card-header__org {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .card-header__org strong {
+      font-family: var(--font-head);
+      font-size: .9375rem;
+      color: #fff;
+    }
+    .card-header__org small {
+      font-size: .8rem;
+      color: rgba(255,255,255,.7);
+    }
+    .card-header__badge {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: var(--r-pill);
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      font-size: .75rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .card-header__badge span.dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #8FE3C8;
+      box-shadow: 0 0 0 3px rgba(143,227,200,.3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(143,227,200,0); } }
+
+    .card-header h1 {
+      color: #fff;
+      font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      text-wrap: balance;
+      position: relative;
+    }
+    .card-header h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, #FF8CC0, #F4C6FF);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .card-header__sub {
+      margin-top: 10px;
+      color: rgba(255,255,255,.78);
+      font-size: .9875rem;
+      max-width: 520px;
+      position: relative;
+    }
+
+    /* ── Info pills ───────────────────────────────────────────────── */
+    .info-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+      position: relative;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      background: rgba(255,255,255,.13);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size: .8125rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .pill svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+    /* ── Form body ────────────────────────────────────────────────── */
+    .card-body {
+      padding: clamp(24px,5vw,40px);
+    }
+
+    .form-section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: .8125rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 18px;
+      margin-top: 32px;
+    }
+    .form-section-label:first-child { margin-top: 0; }
+    .form-section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field--full { grid-column: 1 / -1; }
+    .field[hidden] { display: none; }
+
+    .field label {
+      font-family: var(--font-head);
+      font-weight: 600;
+      font-size: .875rem;
+      color: var(--navy);
+    }
+    .field label .req { color: var(--magenta); margin-left: 2px; }
+    .field label .opt { color: var(--text-muted); font-weight: 400; font-size: .8rem; margin-left: 4px; }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      background: #fff;
+      font-size: .9875rem;
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234A5170' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 38px;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(10,127,200,.15);
+    }
+    .field input[aria-invalid="true"],
+    .field select[aria-invalid="true"],
+    .field textarea[aria-invalid="true"] {
+      border-color: #B42318;
+    }
+    .field__err {
+      font-size: .8125rem;
+      color: #B42318;
+      font-weight: 500;
+      min-height: 18px;
+      margin: 0;
+    }
+    .field__hint {
+      font-size: .8125rem;
+      color: var(--purple);
+      font-weight: 600;
+      margin: 0;
+    }
+    .field__hint:empty { display: none; }
+
+    /* consent checkbox */
+    .field label.consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: .9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .field label.consent input {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      flex: none;
+      accent-color: var(--magenta);
+      appearance: auto;
+      -webkit-appearance: auto;
+      cursor: pointer;
+    }
+
+    /* ── Submit button ────────────────────────────────────────────── */
+    .submit-wrap {
+      margin-top: 32px;
+    }
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 54px;
+      padding: 0 24px;
+      border-radius: var(--r-pill);
+      border: none;
+      background: var(--magenta);
+      color: #fff;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1.0625rem;
+      box-shadow: 0 8px 22px rgba(206,42,122,.32);
+      cursor: pointer;
+      transition: background .15s, box-shadow .15s, transform .15s var(--ease-out);
+    }
+    .btn-submit:hover { background: var(--magenta-600); box-shadow: 0 10px 28px rgba(206,42,122,.42); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-submit .spinner {
+      display: none; width: 18px; height: 18px; border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff;
+      animation: spin .8s linear infinite;
+    }
+    .btn-submit.is-loading .spinner { display: block; }
+    .btn-submit.is-loading svg { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-error {
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border-radius: var(--r-sm);
+      background: #FEF3F2;
+      border: 1px solid #FECDCA;
+      color: #B42318;
+      font-size: .9rem;
+      font-weight: 500;
+    }
+    .form-error:empty { display: none; }
+
+    .form-note {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: .8375rem;
+      margin-top: 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 6px;
+    }
+    .form-note svg { width:15px; height:15px; flex:none; margin-top:2px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; color: var(--teal); }
+
+    /* ── Success state ────────────────────────────────────────────── */
+    .success-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      padding: clamp(32px,6vw,56px) clamp(24px,5vw,40px);
+    }
+    .success-panel.is-visible { display: flex; }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--green));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 24px rgba(8,156,108,.3);
+    }
+    .success-icon svg { width:34px; height:34px; fill:none; stroke:#fff; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .success-panel h2 { font-size: clamp(1.3rem, 1rem + 1.5vw, 1.75rem); color: var(--navy); }
+    .success-panel p { color: var(--text-muted); max-width: 420px; font-size: .9875rem; }
+    .success-panel .again-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: var(--r-pill);
+      background: var(--magenta);
+      color: #fff;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: .9875rem;
+      box-shadow: 0 6px 20px rgba(206,42,122,.3);
+      transition: background .15s;
+    }
+    .success-panel .again-btn:hover { background: var(--magenta-600); }
+    .success-panel .again-btn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .success-summary {
+      width: 100%;
+      max-width: 380px;
+      text-align: left;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 18px;
+      font-size: .9375rem;
+    }
+    .success-summary div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+    .success-summary dt { color: var(--text-muted); }
+    .success-summary dd { margin: 0; font-weight: 600; color: var(--navy); text-align: right; }
+    .success-panel .back-link {
+      color: var(--magenta);
+      font-weight: 600;
+      font-size: .9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .success-panel .back-link svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── Footer ───────────────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 24px clamp(16px,4vw,32px);
+      color: var(--text-muted);
+      font-size: .8375rem;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+    .footer a { color: var(--magenta); font-weight: 600; }
+    .footer a:hover { color: var(--magenta-600); }
+
+    /* ── Responsive tweaks ────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .card-header__badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- Top nav bar -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        Back to main site
+      </a>
+      <span>Gov Reg No: IV/15/2026</span>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="main" id="main">
+    <div class="form-card">
+
+      <!-- Card header -->
+      <div class="card-header">
+        <div class="card-header__top">
+          <img class="card-header__logo" src="assets/img/logo.png" alt="The Sound of Universe Trust logo" width="52" height="52">
+          <div class="card-header__org">
+            <strong>The Sound of Universe Trust</strong>
+            <small lang="ta">பிரபஞ்சத்தின் ஒலி அறக்கட்டளை</small>
+          </div>
+          <span class="card-header__badge"><span class="dot" aria-hidden="true"></span>Open</span>
+        </div>
+        <h1>Drawing <em>Competition</em><br>Registration</h1>
+        <p class="card-header__sub">Register your child for our upcoming Drawing Competition. Fill in the details below and tap Register — that's all.</p>
+        <div class="info-pills">
+          <span class="pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Date: To be announced
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Ranipet, Tamil Nadu
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Free Entry
+          </span>
+        </div>
+      </div>
+
+      <!-- Registration form -->
+      <div class="card-body" id="form-section">
+        <form id="reg-form" novalidate>
+
+          <p class="form-section-label">Participant Details</p>
+          <div class="form-row">
+            <div class="field">
+              <label for="r-name">Participant's Name <span class="req" aria-hidden="true">*</span></label>
+              <input id="r-name" name="name" type="text" autocomplete="name" required placeholder="e.g. Priya S" aria-describedby="e-name">
+              <p class="field__err" id="e-name" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="r-age">Age <span class="req" aria-hidden="true">*</span></label>
+              <input id="r-age" name="age" type="number" inputmode="numeric" min="3" max="18" required placeholder="e.g. 10" aria-describedby="e-age e-category">
+              <p class="field__err" id="e-age" aria-live="polite"></p>
+              <p class="field__hint" id="e-category" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:4px;">
+            <label for="r-school">School <span class="req" aria-hidden="true">*</span></label>
+            <select id="r-school" name="school" required aria-describedby="e-school">
+              <option value="">Select your school</option>
+              <!-- Filled from SCHOOLS in the script below -->
+              <option value="__other">Others</option>
+            </select>
+            <p class="field__err" id="e-school" aria-live="polite"></p>
+          </div>
+
+          <div class="field" id="other-wrap" hidden>
+            <label for="r-other">School Name <span class="req" aria-hidden="true">*</span></label>
+            <input id="r-other" name="otherSchool" type="text" placeholder="Type your school name" aria-describedby="e-other">
+            <p class="field__err" id="e-other" aria-live="polite"></p>
+          </div>
+
+          <div class="field" style="margin-top:4px;">
+            <label for="r-class">Class <span class="req" aria-hidden="true">*</span></label>
+            <select id="r-class" name="class" required aria-describedby="e-class">
+              <option value="">Select class</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+              <option>9</option><option>10</option><option>11</option><option>12</option>
+            </select>
+            <p class="field__err" id="e-class" aria-live="polite"></p>
+          </div>
+
+          <div class="form-row" style="margin-top:4px;">
+            <div class="field">
+              <label for="r-phone">Mobile Number <span class="req" aria-hidden="true">*</span></label>
+              <input id="r-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="10-digit mobile number" aria-describedby="e-phone">
+              <p class="field__err" id="e-phone" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="r-email">Email <span class="opt">(optional)</span></label>
+              <input id="r-email" name="email" type="email" autocomplete="email" placeholder="youremail@example.com" aria-describedby="e-email">
+              <p class="field__err" id="e-email" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <!-- Consent: participants are minors -->
+          <div class="field" style="margin-top:8px;">
+            <label class="consent" for="r-consent">
+              <input id="r-consent" name="consent" type="checkbox" required aria-describedby="e-consent">
+              <span>I am the participant's parent / guardian (or the participant is 18+), and I agree to be contacted about this event. <span class="req" aria-hidden="true">*</span></span>
+            </label>
+            <p class="field__err" id="e-consent" aria-live="polite"></p>
+          </div>
+
+          <!-- Submit -->
+          <div class="submit-wrap">
+            <p class="form-error" id="form-error" role="alert"></p>
+            <button type="submit" class="btn-submit" id="submit-btn">
+              <span class="spinner" aria-hidden="true"></span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span id="submit-label">Register</span>
+            </button>
+            <p class="form-note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              Your details are kept private and are seen only by the trust.
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success panel (shown after submit) -->
+      <div class="success-panel" id="success-panel" tabindex="-1">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h2>Registered Successfully!</h2>
+        <p>Thank you! The registration is confirmed. We'll share the competition date and venue soon.</p>
+        <dl class="success-summary">
+          <div><dt>Name</dt><dd id="s-name"></dd></div>
+          <div><dt>Category</dt><dd id="s-category"></dd></div>
+          <div><dt>Class</dt><dd id="s-class"></dd></div>
+          <div><dt>School</dt><dd id="s-school"></dd></div>
+        </dl>
+        <button type="button" class="again-btn" id="again-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Register another child
+        </button>
+        <a class="back-link" href="index.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          Back to main website
+        </a>
+      </div>
+
+    </div><!-- /.form-card -->
+  </main>
+
+  <footer class="footer">
+    <p>
+      © 2026 <a href="index.html">The Sound of Universe Trust</a> · Ranipet, Tamil Nadu ·
+      Gov Reg No: IV/15/2026
+    </p>
+  </footer>
+
+</div><!-- /.page-wrap -->
+
+<script>
+(function () {
+  'use strict';
+
+  /* Google Apps Script "Web app URL" (ends in /exec). See google-apps-script/Code.gs for setup. */
+  var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzqBa089NilkDjjYHNVXCPP2FWrjveoLwebVyN8a4xyI914S77KbI16rN1pv54DGIrj/exec';
+
+  /* Schools shown in the dropdown. Each one gets its own tab in the Google Sheet.
+     Keep this list the SAME as SCHOOLS in google-apps-script/Code.gs.
+     "Others" is added automatically — those all go into one "Others" tab. */
+  var SCHOOLS = [
+    'Vedavalli Vidyalaya',
+    'Bharathidhasanar Matric Hr Sec School',
+    'Sri Ramakrishna Matric Higher Secondary School',
+    'D.A.V. BHEL School',
+    'The Krisar Academy',
+    'Selvam Matric Higher Secondary School',
+    'V.K.V. Matriculation School',
+    'Gangadara Matriculation Higher Secondary School',
+    'V.R.V. Ladies Higher Secondary School',
+    'Little Flower Convent',
+    'Government Girls Higher Secondary School',
+    'Government ADW Higher Secondary School',
+    'Goodlet Higher Secondary School',
+    'Islamiah Boys Higher Secondary School',
+    'Little Flower (L.F.C.) Girls Higher Secondary School',
+    'Sri Ramakrishna BHEL Higher Secondary School',
+    'Government Higher Secondary School'
+  ];
+
+  var form        = document.getElementById('reg-form');
+  var formSection = document.getElementById('form-section');
+  var successPanel= document.getElementById('success-panel');
+  var submitBtn   = document.getElementById('submit-btn');
+  var formError   = document.getElementById('form-error');
+
+  /* ── Helpers ─────────────────────────────────────────────────── */
+  function $(id) { return document.getElementById(id); }
+
+  function setErr(inputEl, errId, msg) {
+    var err = $(errId);
+    if (msg) {
+      inputEl.setAttribute('aria-invalid', 'true');
+      err.textContent = msg;
+    } else {
+      inputEl.removeAttribute('aria-invalid');
+      err.textContent = '';
+    }
+    return !msg;
+  }
+
+  function isValidPhone(v) {
+    var d = v.replace(/\D/g, '');
+    return /^[6-9]\d{9}$/.test(d) || /^91[6-9]\d{9}$/.test(d) || /^0[6-9]\d{9}$/.test(d);
+  }
+
+  /* Age category is worked out from the age — no separate field to fill */
+  function categoryFor(age) {
+    if (isNaN(age) || age < 3 || age > 18) return '';
+    return age <= 6 ? 'Group A (3–6 yrs)'
+         : age <= 10 ? 'Group B (7–10 yrs)'
+         : age <= 14 ? 'Group C (11–14 yrs)'
+         : 'Group D (15–18 yrs)';
+  }
+
+  /* ── Validators ──────────────────────────────────────────────── */
+  function vName() {
+    var el = $('r-name');
+    return setErr(el, 'e-name', el.value.trim().length < 2 ? 'Please enter the participant\'s name.' : null);
+  }
+  function vAge() {
+    var el = $('r-age'), v = parseInt(el.value, 10);
+    return setErr(el, 'e-age', (isNaN(v) || v < 3 || v > 18) ? 'Please enter an age between 3 and 18.' : null);
+  }
+  function isOther() { return $('r-school').value === '__other'; }
+
+  function vSchool() {
+    var el = $('r-school');
+    return setErr(el, 'e-school', !el.value ? 'Please select your school.' : null);
+  }
+  function vOther() {
+    var el = $('r-other');
+    if (!isOther()) return setErr(el, 'e-other', null);
+    return setErr(el, 'e-other', el.value.trim().length < 2 ? 'Please type your school name.' : null);
+  }
+  function vClass() {
+    var el = $('r-class');
+    return setErr(el, 'e-class', !el.value ? 'Please select the class.' : null);
+  }
+  function vPhone() {
+    var el = $('r-phone');
+    return setErr(el, 'e-phone', !isValidPhone(el.value) ? 'Please enter a valid 10-digit mobile number.' : null);
+  }
+  function vEmail() {
+    var el = $('r-email'), v = el.value.trim();
+    return setErr(el, 'e-email', (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) ? 'Please enter a valid email, or leave it empty.' : null);
+  }
+  function vConsent() {
+    var el = $('r-consent');
+    return setErr(el, 'e-consent', !el.checked ? 'Please tick this box to continue.' : null);
+  }
+
+  /* ── Live validation on blur ─────────────────────────────────── */
+  $('r-name').addEventListener('blur', vName);
+  $('r-age').addEventListener('blur', vAge);
+  $('r-other').addEventListener('blur', vOther);
+  $('r-class').addEventListener('change', vClass);
+  $('r-phone').addEventListener('blur', vPhone);
+  $('r-email').addEventListener('blur', vEmail);
+  $('r-consent').addEventListener('change', vConsent);
+
+  /* ── School dropdown: fill from SCHOOLS, show a text box for "Others" ── */
+  var otherOpt = $('r-school').querySelector('option[value="__other"]');
+  SCHOOLS.forEach(function (name) {
+    var o = document.createElement('option');
+    o.value = o.textContent = name;
+    $('r-school').insertBefore(o, otherOpt);
+  });
+  $('r-school').addEventListener('change', function () {
+    vSchool();
+    $('other-wrap').hidden = !isOther();
+    $('r-other').required = isOther();
+    if (isOther()) $('r-other').focus();
+    else setErr($('r-other'), 'e-other', null);
+  });
+
+  /* ── Show the age category as soon as the age is typed ───────── */
+  $('r-age').addEventListener('input', function () {
+    var cat = categoryFor(parseInt(this.value, 10));
+    $('e-category').textContent = cat ? 'Category: ' + cat : '';
+  });
+
+  /* ── Submit ──────────────────────────────────────────────────── */
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.classList.toggle('is-loading', on);
+    $('submit-label').textContent = on ? 'Registering…' : 'Register';
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    formError.textContent = '';
+
+    var ok = [vName(), vAge(), vSchool(), vOther(), vClass(), vPhone(), vEmail(), vConsent()];
+    if (ok.indexOf(false) !== -1) {
+      var first = form.querySelector('[aria-invalid="true"]');
+      if (first) first.focus();
+      return;
+    }
+
+    var data = {
+      name:    $('r-name').value.trim(),
+      age:     $('r-age').value.trim(),
+      school:  isOther() ? $('r-other').value.trim() : $('r-school').value,
+      other:   isOther(),
+      cls:     $('r-class').value,
+      phone:   $('r-phone').value.trim(),
+      email:   $('r-email').value.trim()
+    };
+
+    if (!SHEET_URL) {
+      formError.textContent = 'Registration is not connected yet. Please try again later.';
+      return;
+    }
+
+    setLoading(true);
+    // Plain-text body keeps this a "simple" request, so Apps Script accepts it without a CORS preflight.
+    fetch(SHEET_URL, { method: 'POST', body: JSON.stringify(data) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.error || 'failed');
+
+        $('s-name').textContent = data.name;
+        $('s-category').textContent = categoryFor(parseInt(data.age, 10));
+        $('s-class').textContent = data.cls;
+        $('s-school').textContent = data.school;
+        formSection.hidden = true;
+        successPanel.classList.add('is-visible');
+        successPanel.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function () {
+        formError.textContent = 'Sorry, we couldn\'t register you right now. Please check your internet and try again.';
+      })
+      .then(function () { setLoading(false); });
+  });
+
+  /* ── Register another child (keeps school & phone filled in) ─── */
+  $('again-btn').addEventListener('click', function () {
+    $('r-name').value = '';
+    $('r-age').value = '';
+    $('r-class').value = '';
+    $('e-category').textContent = '';
+    successPanel.classList.remove('is-visible');
+    formSection.hidden = false;
+    $('r-name').focus();
+  });
+})();
+</script>
+
+</body>
+</html>
