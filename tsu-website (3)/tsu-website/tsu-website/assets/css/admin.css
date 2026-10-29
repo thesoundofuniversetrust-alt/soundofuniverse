@@ -217,14 +217,20 @@ input, select, textarea { font: inherit; }
   .dash-main { padding: 16px 12px 60px; }
   .panel-head { margin-bottom: 16px; }
   .panel-head h2 { font-size: 1.15rem; }
-  .admin-card { gap: 10px; padding: 14px 12px; }
-  .admin-card__thumb { width: 56px; height: 44px; }
-  .admin-card__body h3 { font-size: .95rem; }
+  .admin-card { gap: 10px; padding: 12px; flex-wrap: nowrap; align-items: flex-start; }
+  .act-card-ic { width: 48px !important; height: 48px !important; flex: none; }
+  .admin-card__thumb { width: 56px; height: 44px; flex: none; }
+  .admin-card__body { flex: 1; min-width: 0; overflow: hidden; }
+  .admin-card__body h3 { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .admin-card__body p { font-size: .78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .admin-card__edit { flex: none; }
   .modal { width: calc(100vw - 16px); max-height: calc(100dvh - 32px); }
   .modal__body { padding: 14px 16px; }
   .modal__foot { padding: 12px 16px; flex-direction: column-reverse; }
   .modal__foot .btn { width: 100%; }
   .field-row { grid-template-columns: 1fr; }
+  .photos-grid { grid-template-columns: repeat(3, 1fr); }
+  .gal-admin-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ── Spinner ── */

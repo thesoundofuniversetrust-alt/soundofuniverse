@@ -91,7 +91,9 @@
   }
   async function saveData(patch) {
     var r = await fetch(API+'/admin-data', { method:'POST', headers:{'Content-Type':'application/json','x-admin-token':token}, body: JSON.stringify(patch) });
-    if (!r.ok) throw new Error('Save failed');
+    var d = await r.json();
+    if (!r.ok) throw new Error('Save failed: ' + (d.error || r.status));
+    return d;
   }
 
   /* ── Cloudinary upload ── */
