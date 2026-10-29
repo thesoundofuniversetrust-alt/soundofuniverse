@@ -1,43 +1,28 @@
 const crypto = require('crypto');
 
 const OWNER_EMAIL    = 'thesoundofuniversetrust@gmail.com';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'tsu-secret-2026';
+const SECRET         = process.env.SESSION_SECRET || 'tsu-secret-2026';
 
-global._tsuOtp      = global._tsuOtp      || {};
 global._tsuSessions = global._tsuSessions || {};
 
-async function getOtp() {
-  // Try Netlify Blobs first
+function verifyOtpToken(otpToken, submittedOtp) {
   try {
-    const { getStore } = require('@netlify/blobs');
-    const store = getStore('tsu-admin');
-    const raw = await store.get('otp');
-    if (raw) {
-      console.log('OTP read from Netlify Blobs');
-      return JSON.parse(raw);
-    }
+    const decoded = Buffer.from(otpToken, 'base64').toString('utf8');
+    const parts = decoded.split('|');
+    if (parts.length !== 3) return { error: 'Invalid token' };
+    const [storedOtp, expires, sig] = parts;
+    const payload = storedOtp + '|' + expires;
+    const expectedSig = crypto.createHmac('sha256', SECRET).update(payload).digest('hex');
+    if (sig !== expectedSig) return { error: 'Invalid token signature' };
+    if (Date.now() > Number(expires)) return { error: 'OTP expired. Please login again.' };
+    if (storedOtp !== String(submittedOtp).trim()) return { error: 'Incorrect OTP. Please try again.' };
+    return { ok: true };
   } catch (e) {
-    console.log('Blobs read failed:', e.message);
+    return { error: 'Token error: ' + e.message };
   }
-  // Fallback: memory
-  if (global._tsuOtp && global._tsuOtp.otp) {
-    console.log('OTP read from memory');
-    return global._tsuOtp;
-  }
-  return null;
-}
-
-async function deleteOtp() {
-  try {
-    const { getStore } = require('@netlify/blobs');
-    const store = getStore('tsu-admin');
-    await store.delete('otp');
-  } catch (e) { /* ignore */ }
-  global._tsuOtp = {};
 }
 
 exports.handler = async (event) => {
-  console.log('admin-otp called');
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
   let body;
@@ -45,33 +30,22 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: 'Bad JSON' };
   }
 
-  const { otp } = body;
-  console.log('Verifying OTP:', otp);
+  const { otp, otpToken } = body;
 
-  const record = await getOtp();
-  console.log('Stored record:', JSON.stringify(record));
-
-  if (!record) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'OTP not found. Please login again.' }) };
+  if (!otpToken) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Session lost. Please login again.' }) };
   }
 
-  if (record.otp !== String(otp).trim()) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Incorrect OTP. Please try again.' }) };
+  const result = verifyOtpToken(otpToken, otp);
+  if (!result.ok) {
+    return { statusCode: 401, body: JSON.stringify({ error: result.error }) };
   }
 
-  if (Date.now() > record.expires) {
-    await deleteOtp();
-    return { statusCode: 401, body: JSON.stringify({ error: 'OTP expired. Please login again.' }) };
-  }
-
-  await deleteOtp();
-
-  const token = crypto.createHmac('sha256', SESSION_SECRET)
+  const token = crypto.createHmac('sha256', SECRET)
     .update(OWNER_EMAIL + Date.now())
     .digest('hex');
 
   global._tsuSessions[token] = { email: OWNER_EMAIL, expires: Date.now() + 4 * 60 * 60 * 1000 };
-  console.log('Session created:', token.substring(0, 8) + '...');
 
   return { statusCode: 200, body: JSON.stringify({ token }) };
 };

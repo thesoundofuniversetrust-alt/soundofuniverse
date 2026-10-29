@@ -3,6 +3,7 @@
 
   var API = '/api';
   var token = sessionStorage.getItem('tsu-admin-token') || '';
+  var otpToken = ''; // signed token from login response
   var siteData = { activities: [], services: [], logo: 'assets/img/logo.png' };
   var editingActIdx = -1;
   var editingSvcIdx = -1;
@@ -42,6 +43,7 @@
       });
       var d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Login failed');
+      otpToken = d.otpToken || '';
       screen('screen-otp');
       if (d.otp) {
         $('#otp-hint').innerHTML = 'Email not configured yet. Your OTP is:<br><strong style="font-size:1.6rem;letter-spacing:6px;color:#212C5C;font-family:monospace">' + d.otp + '</strong>';
@@ -65,7 +67,7 @@
       var r = await fetch(API + '/admin-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: $('#l-otp').value.trim() })
+        body: JSON.stringify({ otp: $('#l-otp').value.trim(), otpToken: otpToken })
       });
       var d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Invalid OTP');
