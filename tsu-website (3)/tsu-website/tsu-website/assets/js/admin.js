@@ -112,7 +112,7 @@
   /* ══════════════════════════════════════════
      ACTIVITIES
   ══════════════════════════════════════════ */
-  var COLOR_MAP = { purple:'#61367F', magenta:'#CE2A7A', sky:'#0A7FC8', teal:'#0E6B63', green:'#089C6C' };
+  var COLOR_MAP = { purple:'#61367F', magenta:'#CE2A7A', sky:'#0A7FC8', teal:'#0E6B63', green:'#089C6C', orange:'#E8650A', red:'#C0392B', indigo:'#3D3B8E', cyan:'#0891B2', yellow:'#B45309' };
 
   function renderActivities() {
     var list = $('#activities-list');
