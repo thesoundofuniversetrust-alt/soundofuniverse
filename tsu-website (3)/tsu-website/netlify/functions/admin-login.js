@@ -3,6 +3,7 @@ const { Resend } = require('resend');
 const OWNER_EMAIL = 'thesoundofuniversetrust@gmail.com';
 const OWNER_PASS  = 'Gasvtrust@34';
 const OTP_TTL     = 60 * 1000;
+const RESEND_KEY  = process.env.RESEND_API_KEY;
 
 // Use a simple fetch-based blob store as fallback
 global._tsuOtp = global._tsuOtp || {};
@@ -52,8 +53,8 @@ exports.handler = async (event) => {
   let emailSent = false;
   let resendError = null;
   try {
-    console.log('Attempting Resend, API key present:', !!process.env.RESEND_API_KEY);
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('Attempting Resend, API key present:', !!RESEND_KEY);
+    const resend = new Resend(RESEND_KEY);
     const result = await resend.emails.send({
       from: 'TSU Admin <onboarding@resend.dev>',
       to: OWNER_EMAIL,
