@@ -37,7 +37,7 @@
   <div class="auth-card">
     <img src="assets/img/logo.png" alt="TSU" class="auth-logo">
     <h1 class="auth-title">Enter OTP</h1>
-    <p class="auth-sub" id="otp-hint">A 6-digit code was sent to your email. Valid for 60 seconds.</p>
+    <p class="auth-sub" id="otp-hint">A 6-digit code has been sent to your email. Valid for 60 seconds.</p>
     <form id="otp-form" novalidate>
       <div class="field">
         <label for="l-otp">One-Time Password</label>
@@ -60,6 +60,7 @@
       <nav class="dash-nav">
         <button class="dash-nav__btn is-active" data-tab="activities">Activities</button>
         <button class="dash-nav__btn" data-tab="services">Services</button>
+        <button class="dash-nav__btn" data-tab="gallery">Gallery</button>
       </nav>
       <button class="btn btn--outline btn--sm" id="logout-btn">Logout</button>
     </div>
@@ -83,6 +84,17 @@
         <button class="btn btn--primary btn--sm" id="new-service-btn">+ New Service</button>
       </div>
       <div id="services-list" class="cards-list"></div>
+    </div>
+
+    <!-- GALLERY TAB -->
+    <div id="tab-gallery" class="tab-panel" hidden>
+      <div class="panel-head">
+        <h2>Gallery</h2>
+        <label class="btn btn--primary btn--sm" style="cursor:pointer">
+          <input type="file" id="gal-upload" accept="image/*" multiple style="display:none"> + Add Photos
+        </label>
+      </div>
+      <div id="gallery-grid" class="gal-admin-grid"></div>
     </div>
 
   </main>

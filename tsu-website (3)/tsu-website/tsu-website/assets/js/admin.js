@@ -42,11 +42,8 @@
       if (!r.ok) throw new Error(d.error || 'Login failed');
       otpToken = d.otpToken || '';
       screen('screen-otp');
-      if (d.otp) {
-        $('#otp-hint').innerHTML = 'Your OTP is:<br><strong style="font-size:1.8rem;letter-spacing:8px;color:#212C5C;font-family:monospace">' + d.otp + '</strong>';
-      } else {
-        $('#otp-hint').textContent = 'A 6-digit code was sent to your email. Valid for 60 seconds.';
-      }
+      // Never show OTP on screen — only sent to email
+      $('#otp-hint').textContent = 'A 6-digit code has been sent to your email. Valid for 60 seconds.';
       $('#l-otp').focus();
     } catch(ex) { err.textContent = ex.message; }
     finally { setLoading(btn, false); }
@@ -90,6 +87,7 @@
     siteData = await r.json();
     renderActivities();
     renderServices();
+    renderGallery();
   }
   async function saveData(patch) {
     var r = await fetch(API+'/admin-data', { method:'POST', headers:{'Content-Type':'application/json','x-admin-token':token}, body: JSON.stringify(patch) });
@@ -350,6 +348,100 @@
   });
 
   $('#close-service-modal').addEventListener('click', function() { $('#modal-service').close(); });
+
+  /* ══════════════════════════════════════════
+     GALLERY
+  ══════════════════════════════════════════ */
+  var GALLERY_DEFAULT = [
+    { src: 'assets/img/hero.jpg',         cap: 'Food drive team, Ranipet' },
+    { src: 'assets/img/poster.jpg',       cap: 'Our official poster' },
+    { src: 'assets/img/g-team-left.jpg',  cap: 'Volunteers on duty' },
+    { src: 'assets/img/g-banner.jpg',     cap: 'Where it happens' },
+    { src: 'assets/img/g-team-wide.jpg',  cap: 'Together, as one team' },
+    { src: 'assets/img/g-packets.jpg',    cap: 'Packed with care' },
+    { src: 'assets/img/banner-full.jpg',  cap: 'Our story in one frame' },
+    { src: 'assets/img/g-women.jpg',      cap: 'Women leading the way' },
+    { src: 'assets/img/g-lead.jpg',       cap: 'Standing together' },
+    { src: 'assets/img/g-men.jpg',        cap: 'After a day of service' },
+    { src: 'assets/img/g-team-right.jpg', cap: 'Our young volunteers' },
+    { src: 'assets/img/schl_event-1.jpg', cap: 'School Event' }
+  ];
+
+  function getGallery() {
+    return siteData.gallery && siteData.gallery.length ? siteData.gallery : GALLERY_DEFAULT;
+  }
+
+  function renderGallery() {
+    var grid = $('#gallery-grid');
+    if (!grid) return;
+    var items = getGallery();
+    grid.innerHTML = '';
+    items.forEach(function(item, i) {
+      var div = document.createElement('div');
+      div.className = 'gal-admin-item';
+      div.innerHTML =
+        '<img src="' + esc(item.src) + '" alt="' + esc(item.cap) + '">' +
+        '<div class="gal-admin-cap">' + esc(item.cap) + '</div>' +
+        '<button class="photo-item__del gal-del" data-i="' + i + '" title="Delete">✕</button>';
+      grid.appendChild(div);
+    });
+    grid.querySelectorAll('.gal-del').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Remove this photo from gallery?')) return;
+        var items = getGallery();
+        items.splice(parseInt(btn.dataset.i), 1);
+        siteData.gallery = items;
+        await saveData({ gallery: items });
+        renderGallery();
+        toast('Photo removed');
+      });
+    });
+  }
+
+  $('#gal-upload').addEventListener('change', async function() {
+    var files = Array.from(this.files);
+    if (!files.length) return;
+    try {
+      var items = getGallery().slice();
+      for (var f of files) {
+        var url = await uploadToCloudinary(f, 'tsu/gallery');
+        items.push({ src: url, cap: f.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ') });
+      }
+      siteData.gallery = items;
+      await saveData({ gallery: items });
+      renderGallery();
+      toast(files.length + ' photo(s) added to gallery');
+    } catch(ex) { toast(ex.message, true); }
+    this.value = '';
+  });
+
+  document.getElementById('tab-gallery').addEventListener('click', function(e) {
+    var btn = e.target.closest('.gal-del');
+    if (btn) return; // handled above
+  });
+
+  // Re-attach gallery upload after any re-render
+  function attachGalUpload() {
+    var inp = document.getElementById('gal-upload');
+    if (inp) inp.addEventListener('change', handleGalUpload);
+  }
+  async function handleGalUpload() {
+    var files = Array.from(this.files);
+    if (!files.length) return;
+    try {
+      var items = getGallery().slice();
+      for (var f of files) {
+        var url = await uploadToCloudinary(f, 'tsu/gallery');
+        items.push({ src: url, cap: f.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ') });
+      }
+      siteData.gallery = items;
+      await saveData({ gallery: items });
+      renderGallery();
+      toast(files.length + ' photo(s) added to gallery');
+    } catch(ex) { toast(ex.message, true); }
+    this.value = '';
+  }
+  attachGalUpload();
 
   /* ── Modal backdrop / Escape ── */
   ['modal-activity','modal-service'].forEach(function(id) {
