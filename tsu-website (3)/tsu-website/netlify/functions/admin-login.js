@@ -23,12 +23,13 @@ exports.handler = async (event) => {
   global._tsuOtp[OWNER_EMAIL] = { otp, expires };
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  await resend.emails.send({
+  const sendResult = await resend.emails.send({
     from: 'TSU Admin <onboarding@resend.dev>',
     to: OWNER_EMAIL,
     subject: 'Your TSU Admin OTP',
     html: `<p>Your one-time password is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes.</p>`
   });
+  console.log('Resend result:', JSON.stringify(sendResult));
 
-  return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+  return { statusCode: 200, body: JSON.stringify({ ok: true, debug: sendResult }) };
 };
