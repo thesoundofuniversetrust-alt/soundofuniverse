@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
+<!-- ── LOGIN ── -->
 <div id="screen-login" class="screen screen--center">
   <div class="auth-card">
     <img src="assets/img/logo.png" alt="TSU" class="auth-logo">
@@ -32,7 +32,7 @@
   </div>
 </div>
 
-<!-- ── OTP SCREEN ── -->
+<!-- ── OTP ── -->
 <div id="screen-otp" class="screen screen--center" hidden>
   <div class="auth-card">
     <img src="assets/img/logo.png" alt="TSU" class="auth-logo">
@@ -73,22 +73,6 @@
         <h2>Activities</h2>
         <button class="btn btn--primary btn--sm" id="new-activity-btn">+ New Activity</button>
       </div>
-
-      <!-- Logo editor -->
-      <div class="logo-editor card">
-        <h3>Site Logo</h3>
-        <div class="logo-editor__row">
-          <img id="logo-preview" src="assets/img/logo.png" alt="Logo" class="logo-preview">
-          <div>
-            <label class="upload-btn">
-              <input type="file" id="logo-upload" accept="image/*">
-              Change Logo
-            </label>
-            <p class="hint">Recommended: square PNG with transparent background</p>
-          </div>
-        </div>
-      </div>
-
       <div id="activities-list" class="cards-list"></div>
     </div>
 
@@ -104,7 +88,7 @@
   </main>
 </div>
 
-<!-- ── ACTIVITY EDITOR MODAL ── -->
+<!-- ── ACTIVITY MODAL ── -->
 <dialog id="modal-activity" class="modal">
   <div class="modal__head">
     <h2 id="modal-activity-title">Edit Activity</h2>
@@ -112,6 +96,7 @@
   </div>
   <div class="modal__body">
     <input type="hidden" id="act-id">
+
     <div class="field">
       <label for="act-title">Title</label>
       <input id="act-title" type="text" required>
@@ -120,8 +105,54 @@
       <label for="act-desc">Description</label>
       <textarea id="act-desc" rows="3"></textarea>
     </div>
+
+    <!-- Color + Icon row -->
+    <div class="field-row">
+      <div class="field">
+        <label for="act-color">Card Colour</label>
+        <select id="act-color">
+          <option value="purple">Purple</option>
+          <option value="magenta">Magenta / Pink</option>
+          <option value="sky">Sky Blue</option>
+          <option value="teal">Teal</option>
+          <option value="green">Green</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="act-icon">Icon</label>
+        <select id="act-icon">
+          <option value="i-cap">🎓 Education</option>
+          <option value="i-utensils">🍽 Food</option>
+          <option value="i-steth">🩺 Medical</option>
+          <option value="i-sprout">🌱 Environment</option>
+          <option value="i-megaphone">📣 Youth/Awareness</option>
+          <option value="i-heart">❤ Heart</option>
+          <option value="i-users">👥 Community</option>
+          <option value="i-handheart">🤝 Helping</option>
+          <option value="i-paw">🐾 Animals</option>
+          <option value="i-briefcase">💼 Work</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Per-activity logo -->
     <div class="field">
-      <label>Photos</label>
+      <label>Activity Icon Image <span style="font-weight:400;color:#888">(optional — replaces the SVG icon above)</span></label>
+      <div class="logo-row">
+        <img id="act-logo-preview" src="" alt="" class="act-logo-preview" style="display:none">
+        <div>
+          <label class="upload-btn">
+            <input type="file" id="act-logo-upload" accept="image/*">
+            Upload Icon Image
+          </label>
+          <button type="button" class="btn btn--outline btn--sm" id="act-logo-clear" style="margin-left:8px">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="field">
+      <label>Photos <span id="act-photo-count" style="font-weight:400;color:#888"></span></label>
       <div id="act-photos-grid" class="photos-grid"></div>
       <label class="upload-btn">
         <input type="file" id="act-photo-upload" accept="image/*" multiple>
@@ -130,12 +161,12 @@
     </div>
   </div>
   <div class="modal__foot">
-    <button class="btn btn--outline" id="delete-activity-btn">Delete Activity</button>
+    <button class="btn btn--outline" id="delete-activity-btn">Delete</button>
     <button class="btn btn--primary" id="save-activity-btn">Save</button>
   </div>
 </dialog>
 
-<!-- ── SERVICE EDITOR MODAL ── -->
+<!-- ── SERVICE MODAL ── -->
 <dialog id="modal-service" class="modal">
   <div class="modal__head">
     <h2 id="modal-service-title">Edit Service</h2>
@@ -151,29 +182,33 @@
       <label for="svc-desc">Description</label>
       <textarea id="svc-desc" rows="3"></textarea>
     </div>
-    <div class="field">
-      <label for="svc-status">Status</label>
-      <select id="svc-status">
-        <option value="upcoming">Upcoming</option>
-        <option value="done">Completed</option>
-      </select>
+    <div class="field-row">
+      <div class="field">
+        <label for="svc-status">Status</label>
+        <select id="svc-status">
+          <option value="upcoming">Upcoming</option>
+          <option value="done">Completed</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="svc-location">Location</label>
+        <input id="svc-location" type="text">
+      </div>
     </div>
-    <div class="field">
-      <label for="svc-location">Location</label>
-      <input id="svc-location" type="text">
-    </div>
-    <div class="field">
-      <label for="svc-action-label">Button Label</label>
-      <select id="svc-action-label">
-        <option value="Support this">Support this</option>
-        <option value="Register now">Register now</option>
-        <option value="View photos">View photos</option>
-        <option value="Learn more">Learn more</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="svc-action-link">Button Link</label>
-      <input id="svc-action-link" type="text" placeholder="#donate or https://...">
+    <div class="field-row">
+      <div class="field">
+        <label for="svc-action-label">Button Label</label>
+        <select id="svc-action-label">
+          <option value="Support this">Support this</option>
+          <option value="Register now">Register now</option>
+          <option value="View photos">View photos</option>
+          <option value="Learn more">Learn more</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="svc-action-link">Button Link</label>
+        <input id="svc-action-link" type="text" placeholder="#donate or https://...">
+      </div>
     </div>
     <div class="field">
       <label>Cover Photo</label>
@@ -187,13 +222,12 @@
     </div>
   </div>
   <div class="modal__foot">
-    <button class="btn btn--outline" id="delete-service-btn">Delete Service</button>
+    <button class="btn btn--outline" id="delete-service-btn">Delete</button>
     <button class="btn btn--primary" id="save-service-btn">Save</button>
   </div>
 </dialog>
 
 <div class="toast" id="admin-toast"></div>
-
 <script src="assets/js/admin.js"></script>
 </body>
 </html>
