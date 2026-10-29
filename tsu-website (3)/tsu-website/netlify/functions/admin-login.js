@@ -3,8 +3,6 @@ const { Resend } = require('resend');
 const OWNER_EMAIL = 'thesoundofuniversetrust@gmail.com';
 const OWNER_PASS  = 'Gasvtrust@34';
 
-// In-memory OTP store (fine for single-instance Netlify functions)
-// We use a global so it persists within the same warm instance
 global._tsuOtp = global._tsuOtp || {};
 
 exports.handler = async (event) => {
@@ -19,17 +17,34 @@ exports.handler = async (event) => {
   }
 
   const otp = String(Math.floor(100000 + Math.random() * 900000));
-  const expires = Date.now() + 10 * 60 * 1000; // 10 min
+  const expires = Date.now() + 10 * 60 * 1000;
   global._tsuOtp[OWNER_EMAIL] = { otp, expires };
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const sendResult = await resend.emails.send({
-    from: 'TSU Admin <onboarding@resend.dev>',
-    to: OWNER_EMAIL,
-    subject: 'Your TSU Admin OTP',
-    html: `<p>Your one-time password is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes.</p>`
-  });
-  console.log('Resend result:', JSON.stringify(sendResult));
+  // Try sending via Resend — if it fails (no verified domain), fall back to returning OTP directly
+  let emailSent = false;
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const result = await resend.emails.send({
+      from: 'TSU Admin <onboarding@resend.dev>',
+      to: OWNER_EMAIL,
+      subject: 'Your TSU Admin OTP',
+      html: `<p>Your OTP is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for 10 minutes.</p>`
+    });
+    if (result && result.id) emailSent = true;
+    console.log('Resend result:', JSON.stringify(result));
+  } catch (err) {
+    console.log('Resend error:', err.message);
+  }
 
-  return { statusCode: 200, body: JSON.stringify({ ok: true, debug: sendResult }) };
+  // Return OTP in response if email could not be sent (no verified domain yet)
+  // Once domain is verified in Resend, remove the `otp` field from this response
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      ok: true,
+      emailSent,
+      // Temporary: show OTP directly since no verified domain yet
+      otp: emailSent ? undefined : otp
+    })
+  };
 };

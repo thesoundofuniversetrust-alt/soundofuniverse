@@ -43,6 +43,12 @@
       var d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Login failed');
       screen('screen-otp');
+      // If email couldn't be sent (no verified domain), show OTP directly on screen
+      if (d.otp) {
+        $('#otp-hint').innerHTML = 'Email not configured yet. Your OTP is: <strong style="font-size:1.4rem;letter-spacing:4px;color:#212C5C">' + d.otp + '</strong>';
+      } else {
+        $('#otp-hint').textContent = 'A 6-digit code was sent to your email.';
+      }
       $('#l-otp').focus();
     } catch(ex) {
       err.textContent = ex.message;
