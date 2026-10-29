@@ -1,9 +1,7 @@
 const crypto = require('crypto');
 
-const OWNER_EMAIL    = 'thesoundofuniversetrust@gmail.com';
-const SECRET         = process.env.SESSION_SECRET || 'tsu-secret-2026';
-
-global._tsuSessions = global._tsuSessions || {};
+const OWNER_EMAIL = 'thesoundofuniversetrust@gmail.com';
+const SECRET      = process.env.SESSION_SECRET || 'tsu-secret-2026';
 
 function verifyOtpToken(otpToken, submittedOtp) {
   try {
@@ -11,8 +9,7 @@ function verifyOtpToken(otpToken, submittedOtp) {
     const parts = decoded.split('|');
     if (parts.length !== 3) return { error: 'Invalid token' };
     const [storedOtp, expires, sig] = parts;
-    const payload = storedOtp + '|' + expires;
-    const expectedSig = crypto.createHmac('sha256', SECRET).update(payload).digest('hex');
+    const expectedSig = crypto.createHmac('sha256', SECRET).update(storedOtp + '|' + expires).digest('hex');
     if (sig !== expectedSig) return { error: 'Invalid token signature' };
     if (Date.now() > Number(expires)) return { error: 'OTP expired. Please login again.' };
     if (storedOtp !== String(submittedOtp).trim()) return { error: 'Incorrect OTP. Please try again.' };
@@ -31,21 +28,17 @@ exports.handler = async (event) => {
   }
 
   const { otp, otpToken } = body;
-
-  if (!otpToken) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Session lost. Please login again.' }) };
-  }
+  if (!otpToken) return { statusCode: 401, body: JSON.stringify({ error: 'Session lost. Please login again.' }) };
 
   const result = verifyOtpToken(otpToken, otp);
-  if (!result.ok) {
-    return { statusCode: 401, body: JSON.stringify({ error: result.error }) };
-  }
+  if (!result.ok) return { statusCode: 401, body: JSON.stringify({ error: result.error }) };
 
-  const token = crypto.createHmac('sha256', SECRET)
-    .update(OWNER_EMAIL + Date.now())
-    .digest('hex');
+  // Issue a stateless session token: base64(email|expires|sig)
+  // This can be verified by ANY function instance without shared memory
+  const expires = Date.now() + 4 * 60 * 60 * 1000; // 4 hours
+  const sig = crypto.createHmac('sha256', SECRET).update(OWNER_EMAIL + '|' + expires).digest('hex');
+  const token = Buffer.from(OWNER_EMAIL + '|' + expires + '|' + sig).toString('base64');
 
-  global._tsuSessions[token] = { email: OWNER_EMAIL, expires: Date.now() + 4 * 60 * 60 * 1000 };
-
+  console.log('Session token issued for:', OWNER_EMAIL);
   return { statusCode: 200, body: JSON.stringify({ token }) };
 };

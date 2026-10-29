@@ -1,11 +1,18 @@
 const crypto = require('crypto');
 
-global._tsuSessions = global._tsuSessions || {};
+const SECRET = process.env.SESSION_SECRET || 'tsu-secret-2026';
 
 function auth(event) {
   const token = (event.headers['x-admin-token'] || '').trim();
-  const s = global._tsuSessions[token];
-  return s && Date.now() < s.expires;
+  if (!token) return false;
+  try {
+    const decoded = Buffer.from(token, 'base64').toString('utf8');
+    const parts = decoded.split('|');
+    if (parts.length !== 3) return false;
+    const [email, expires, sig] = parts;
+    const expectedSig = crypto.createHmac('sha256', SECRET).update(email + '|' + expires).digest('hex');
+    return sig === expectedSig && Date.now() < Number(expires);
+  } catch { return false; }
 }
 
 exports.handler = async (event) => {
