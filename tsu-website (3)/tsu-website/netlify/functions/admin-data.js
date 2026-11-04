@@ -1,58 +1,103 @@
 const crypto = require('crypto');
+const https = require('https');
 
-const SECRET = process.env.SESSION_SECRET || 'tsu-secret-2026';
+const SECRET = process.env.SESSION_SECRET || 'tsu-owner-secret-2025';
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const API_KEY = process.env.CLOUDINARY_API_KEY;
+const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+// Public delivery URL for the JSON manifest (cache-busted on every read)
+const MANIFEST_PUBLIC_ID = 'tsu-data';
+const MANIFEST_URL = () =>
+  `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${MANIFEST_PUBLIC_ID}.json?_=${Date.now()}`;
 
 function auth(event) {
   const token = (event.headers['x-admin-token'] || '').trim();
-  if (!token) { console.log('AUTH: no token'); return false; }
+  if (!token) return false;
   try {
     const decoded = Buffer.from(token, 'base64').toString('utf8');
     const parts = decoded.split('|');
-    if (parts.length !== 3) { console.log('AUTH: bad parts', parts.length); return false; }
+    if (parts.length !== 3) return false;
     const [email, expires, sig] = parts;
     const expectedSig = crypto.createHmac('sha256', SECRET).update(email + '|' + expires).digest('hex');
-    if (sig !== expectedSig) { console.log('AUTH: bad sig'); return false; }
-    if (Date.now() > Number(expires)) { console.log('AUTH: expired'); return false; }
-    console.log('AUTH: ok for', email);
-    return true;
-  } catch (e) { console.log('AUTH error:', e.message); return false; }
+    return sig === expectedSig && Date.now() < Number(expires);
+  } catch { return false; }
 }
 
-// Try Netlify Blobs, fall back to a simple in-memory store
-global._tsuData = global._tsuData || null;
-
-async function getData() {
-  // Try Blobs first
-  try {
-    const { getStore } = require('@netlify/blobs');
-    const store = getStore('tsu-admin');
-    const raw = await store.get('site-data');
-    if (raw) { console.log('getData: from Blobs'); return JSON.parse(raw); }
-  } catch (e) { console.log('getData Blobs error:', e.message); }
-  // Fall back to memory
-  if (global._tsuData) { console.log('getData: from memory'); return global._tsuData; }
-  console.log('getData: using DEFAULT');
-  return getDefault();
+// Fetch JSON from a URL, return parsed object or null
+function fetchJson(url) {
+  return new Promise((resolve) => {
+    https.get(url, (res) => {
+      let raw = '';
+      res.on('data', d => raw += d);
+      res.on('end', () => {
+        try { resolve(JSON.parse(raw)); }
+        catch { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
 }
 
-async function setData(data) {
-  global._tsuData = data; // always keep in memory as backup
-  try {
-    const { getStore } = require('@netlify/blobs');
-    const store = getStore('tsu-admin');
-    await store.set('site-data', JSON.stringify(data));
-    console.log('setData: saved to Blobs');
-  } catch (e) {
-    console.log('setData Blobs error:', e.message);
-    // Memory-only fallback — data persists only while function is warm
-    // This means saves work within a session but may reset on cold start
-  }
+// Upload raw JSON string to Cloudinary, overwriting the existing manifest
+function uploadManifest(jsonString) {
+  return new Promise((resolve, reject) => {
+    if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+      return reject(new Error('Cloudinary env vars not set'));
+    }
+    const timestamp = Math.round(Date.now() / 1000);
+    // Sign: invalidate=true forces CDN cache purge; public_id sets the file name
+    const sigStr = `invalidate=true&overwrite=true&public_id=${MANIFEST_PUBLIC_ID}&resource_type=raw&timestamp=${timestamp}${API_SECRET}`;
+    const signature = crypto.createHash('sha1').update(sigStr).digest('hex');
+
+    const boundary = '----FormBoundary' + Date.now();
+    const fileContent = Buffer.from(jsonString, 'utf8');
+
+    const parts = [
+      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="tsu-data.json"\r\nContent-Type: application/json\r\n\r\n`,
+      fileContent,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="public_id"\r\n\r\n${MANIFEST_PUBLIC_ID}`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="resource_type"\r\n\r\nraw`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="invalidate"\r\n\r\ntrue`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="timestamp"\r\n\r\n${timestamp}`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="api_key"\r\n\r\n${API_KEY}`,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="signature"\r\n\r\n${signature}`,
+      `\r\n--${boundary}--\r\n`
+    ];
+
+    const body = Buffer.concat(parts.map(p => Buffer.isBuffer(p) ? p : Buffer.from(p, 'utf8')));
+
+    const options = {
+      hostname: 'api.cloudinary.com',
+      path: `/v1_1/${CLOUD_NAME}/raw/upload`,
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let raw = '';
+      res.on('data', d => raw += d);
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(raw);
+          if (result.error) return reject(new Error(result.error.message));
+          resolve(result);
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 function getDefault() {
   return {
     activities: [
-      { id: 'education', title: 'Education & Scholarships', desc: 'Educational support and scholarships for poor and needy students.', color: 'purple', icon: 'i-cap', photos: [
+      { id: 'education', title: 'Education & Scholarships', desc: 'Educational support and scholarships for poor and needy students.', color: 'purple', icon: 'i-cap', logo: '', photos: [
         'assets/img/Education_img/schl_event/1.jpeg','assets/img/Education_img/schl_event/2.jpeg','assets/img/Education_img/schl_event/3.jpeg',
         'assets/img/Education_img/schl_event/4.jpeg','assets/img/Education_img/schl_event/5.jpeg','assets/img/Education_img/schl_event/6.jpeg',
         'assets/img/Education_img/schl_event/7.jpeg','assets/img/Education_img/schl_event/8.jpeg','assets/img/Education_img/schl_event/9.jpeg',
@@ -71,10 +116,10 @@ function getDefault() {
         'assets/img/Education_img/schl_event/46.jpeg','assets/img/Education_img/schl_event/47.jpeg','assets/img/Education_img/schl_event/48.jpeg',
         'assets/img/Education_img/schl_event/49.jpeg','assets/img/Education_img/schl_event/50.jpeg','assets/img/Education_img/schl_event/51.jpeg'
       ]},
-      { id: 'food',        title: 'Food, Clothing & Shelter',     desc: 'Food, clothing, shelter and basic necessities for the underprivileged.', color: 'magenta', icon: 'i-utensils', photos: [] },
-      { id: 'medical',     title: 'Medical Camps & Health',        desc: 'Medical camps, health awareness programmes and humanitarian services.', color: 'sky', icon: 'i-steth', photos: [] },
-      { id: 'environment', title: 'Environment & Tree Plantation', desc: 'Environmental protection, tree plantation and nature conservation.', color: 'green', icon: 'i-sprout', photos: [] },
-      { id: 'youth',       title: 'Youth & Social Awareness',      desc: 'Awareness programmes on education, health and social responsibility.', color: 'purple', icon: 'i-megaphone', photos: [] }
+      { id: 'food',        title: 'Food, Clothing & Shelter',     desc: 'Food, clothing, shelter and basic necessities for the underprivileged.', color: 'magenta', icon: 'i-utensils', logo: '', photos: [] },
+      { id: 'medical',     title: 'Medical Camps & Health',        desc: 'Medical camps, health awareness programmes and humanitarian services.', color: 'sky', icon: 'i-steth', logo: '', photos: [] },
+      { id: 'environment', title: 'Environment & Tree Plantation', desc: 'Environmental protection, tree plantation and nature conservation.', color: 'green', icon: 'i-sprout', logo: '', photos: [] },
+      { id: 'youth',       title: 'Youth & Social Awareness',      desc: 'Awareness programmes on education, health and social responsibility.', color: 'purple', icon: 'i-megaphone', logo: '', photos: [] }
     ],
     services: [
       { id: 'food-drive',   title: 'Food Packet Distribution Drive', desc: 'Our volunteers prepared hygienic food packets and handed them to families in need across Ranipet.', status: 'done',     location: 'Ranipet',         coverPhoto: 'assets/img/food_distrubution.png',          actionLabel: 'View photos',  actionLink: '#gallery' },
@@ -89,29 +134,46 @@ function getDefault() {
 }
 
 exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
-  console.log('admin-data:', event.httpMethod);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-store'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers };
+  }
 
   if (event.httpMethod === 'GET') {
-    if (event.queryStringParameters && event.queryStringParameters.reset === '1') {
-      global._tsuData = null;
-      try { const { getStore } = require('@netlify/blobs'); await getStore('tsu-admin').delete('site-data'); } catch {}
-    }
-    const data = await getData();
-    return { statusCode: 200, headers, body: JSON.stringify(data) };
+    // Try to fetch the live manifest from Cloudinary
+    const data = await fetchJson(MANIFEST_URL());
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(data || getDefault())
+    };
   }
 
   if (event.httpMethod === 'POST') {
     if (!auth(event)) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized - token invalid or expired' }) };
+      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
     let body;
-    try { body = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Bad JSON' }) }; }
-    const current = await getData();
+    try { body = JSON.parse(event.body); }
+    catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Bad JSON' }) }; }
+
+    // Merge patch onto current data
+    const current = await fetchJson(MANIFEST_URL()) || getDefault();
     const updated = Object.assign({}, current, body);
-    await setData(updated);
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+
+    try {
+      await uploadManifest(JSON.stringify(updated));
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    } catch (e) {
+      console.error('Manifest upload error:', e.message);
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to save: ' + e.message }) };
+    }
   }
 
-  return { statusCode: 405, body: 'Method Not Allowed' };
+  return { statusCode: 405, headers, body: 'Method Not Allowed' };
 };

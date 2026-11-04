@@ -196,7 +196,7 @@ html[lang="ta"] .nav__menu a:not(.btn) { font-size: .875rem; padding: 0 7px; }
 .nav__menu-donate { display: none; }
 .nav__menu a:not(.btn), .nav__donate { white-space: nowrap; }
 
-.nav__actions { display: flex; align-items: center; gap: var(--s3); }
+.nav__actions { display: flex; align-items: center; gap: var(--s3); margin-left: auto; }
 .lang { display: inline-flex; padding: 3px; background: var(--cream-2); border-radius: var(--r-pill); }
 .lang__btn {
   min-width: 44px; min-height: 36px; padding: 0 12px; border-radius: var(--r-pill);
@@ -565,6 +565,7 @@ html[lang="ta"] .act h3 { font-size: 1rem; }
 .tag { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill); font-size: .8125rem; font-weight: 700; }
 .tag .ic { width: 14px; height: 14px; stroke-width: 2.5; }
 .tag--done { background: #E2F5EE; color: #06714F; }
+.tag--ongoing { background: #FFF3E0; color: #E65100; }
 .tag--soon { background: #FCEAF3; color: var(--magenta-600); }
 @media (max-width: 1024px) {
   .svc-grid { grid-template-columns: 1fr 1fr; }

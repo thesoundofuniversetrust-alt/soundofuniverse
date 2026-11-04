@@ -260,10 +260,11 @@
     var list = $('#services-list');
     list.innerHTML = '';
     siteData.services.forEach(function(svc, i) {
-      var isDone = svc.status === 'done';
-      var badge = isDone
+      var badge = svc.status === 'done'
         ? '<span class="status-badge status-badge--done">✓ Completed</span>'
-        : '<span class="status-badge status-badge--upcoming">⏰ Upcoming</span>';
+        : svc.status === 'ongoing'
+          ? '<span class="status-badge status-badge--ongoing">▶ Ongoing</span>'
+          : '<span class="status-badge status-badge--upcoming">⏰ Upcoming</span>';
       var card = document.createElement('div');
       card.className = 'admin-card';
       card.innerHTML =

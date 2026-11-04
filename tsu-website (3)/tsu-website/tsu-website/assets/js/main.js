@@ -539,9 +539,12 @@
             svcGrid.innerHTML = '';
             data.services.forEach(function(svc) {
               var isDone = svc.status === 'done';
+              var isOngoing = svc.status === 'ongoing';
               var tagHtml = isDone
                 ? '<span class="tag tag--done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Completed</span>'
-                : '<span class="tag tag--soon"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>Upcoming</span>';
+                : isOngoing
+                  ? '<span class="tag tag--ongoing"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Ongoing</span>'
+                  : '<span class="tag tag--soon"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>Upcoming</span>';
               var art = document.createElement('article');
               art.className = 'svc';
               art.setAttribute('data-reveal', '');
