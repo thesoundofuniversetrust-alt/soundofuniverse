@@ -6,10 +6,14 @@ const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const API_KEY = process.env.CLOUDINARY_API_KEY;
 const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
-// Public delivery URL for the JSON manifest (cache-busted on every read)
+// public_id stored in Cloudinary (no extension — Cloudinary raw assets don't need one)
 const MANIFEST_PUBLIC_ID = 'tsu-data';
-const MANIFEST_URL = () =>
-  `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${MANIFEST_PUBLIC_ID}.json?_=${Date.now()}`;
+
+// Delivery URL — Cloudinary raw assets are served at this path
+// Cache-bust with timestamp so we always get the latest version
+function manifestUrl() {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${MANIFEST_PUBLIC_ID}?_cb=${Date.now()}`;
+}
 
 function auth(event) {
   const token = (event.headers['x-admin-token'] || '').trim();
@@ -24,7 +28,6 @@ function auth(event) {
   } catch { return false; }
 }
 
-// Fetch JSON from a URL, return parsed object or null
 function fetchJson(url) {
   return new Promise((resolve) => {
     https.get(url, (res) => {
@@ -38,34 +41,61 @@ function fetchJson(url) {
   });
 }
 
-// Upload raw JSON string to Cloudinary, overwriting the existing manifest
+// Upload the JSON manifest as a Cloudinary RAW asset.
+// Cloudinary Upload API signature rules:
+//   - Sort all signed params alphabetically by key
+//   - Concatenate as key=value&key=value (no URL encoding)
+//   - Append the API secret directly (no separator)
+//   - SHA-1 hash the result
+// resource_type is a URL path segment, NOT a signed parameter.
 function uploadManifest(jsonString) {
   return new Promise((resolve, reject) => {
     if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
       return reject(new Error('Cloudinary env vars not set'));
     }
+
     const timestamp = Math.round(Date.now() / 1000);
-    // Sign: invalidate=true forces CDN cache purge; public_id sets the file name
-    const sigStr = `invalidate=true&overwrite=true&public_id=${MANIFEST_PUBLIC_ID}&resource_type=raw&timestamp=${timestamp}${API_SECRET}`;
+
+    // Params to sign — alphabetical order, resource_type excluded (it's in the URL)
+    const sigParams = {
+      invalidate: 'true',
+      overwrite: 'true',
+      public_id: MANIFEST_PUBLIC_ID,
+      timestamp: String(timestamp)
+    };
+    const sigStr = Object.keys(sigParams).sort()
+      .map(k => `${k}=${sigParams[k]}`)
+      .join('&') + API_SECRET;
     const signature = crypto.createHash('sha1').update(sigStr).digest('hex');
 
-    const boundary = '----FormBoundary' + Date.now();
+    const boundary = '----TSUBoundary' + Date.now();
     const fileContent = Buffer.from(jsonString, 'utf8');
 
-    const parts = [
-      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="tsu-data.json"\r\nContent-Type: application/json\r\n\r\n`,
-      fileContent,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="public_id"\r\n\r\n${MANIFEST_PUBLIC_ID}`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="resource_type"\r\n\r\nraw`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="invalidate"\r\n\r\ntrue`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="timestamp"\r\n\r\n${timestamp}`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="api_key"\r\n\r\n${API_KEY}`,
-      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="signature"\r\n\r\n${signature}`,
-      `\r\n--${boundary}--\r\n`
+    const fields = [
+      ['public_id', MANIFEST_PUBLIC_ID],
+      ['overwrite', 'true'],
+      ['invalidate', 'true'],
+      ['timestamp', String(timestamp)],
+      ['api_key', API_KEY],
+      ['signature', signature]
     ];
 
-    const body = Buffer.concat(parts.map(p => Buffer.isBuffer(p) ? p : Buffer.from(p, 'utf8')));
+    const parts = [];
+    fields.forEach(([name, value]) => {
+      parts.push(Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`,
+        'utf8'
+      ));
+    });
+    // File field
+    parts.push(Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="tsu-data.json"\r\nContent-Type: application/json\r\n\r\n`,
+      'utf8'
+    ));
+    parts.push(fileContent);
+    parts.push(Buffer.from(`\r\n--${boundary}--\r\n`, 'utf8'));
+
+    const body = Buffer.concat(parts);
 
     const options = {
       hostname: 'api.cloudinary.com',
@@ -85,7 +115,7 @@ function uploadManifest(jsonString) {
           const result = JSON.parse(raw);
           if (result.error) return reject(new Error(result.error.message));
           resolve(result);
-        } catch (e) { reject(e); }
+        } catch (e) { reject(new Error('Bad response from Cloudinary: ' + raw.slice(0, 200))); }
       });
     });
     req.on('error', reject);
@@ -145,8 +175,7 @@ exports.handler = async (event) => {
   }
 
   if (event.httpMethod === 'GET') {
-    // Try to fetch the live manifest from Cloudinary
-    const data = await fetchJson(MANIFEST_URL());
+    const data = await fetchJson(manifestUrl());
     return {
       statusCode: 200,
       headers,
@@ -162,8 +191,7 @@ exports.handler = async (event) => {
     try { body = JSON.parse(event.body); }
     catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Bad JSON' }) }; }
 
-    // Merge patch onto current data
-    const current = await fetchJson(MANIFEST_URL()) || getDefault();
+    const current = await fetchJson(manifestUrl()) || getDefault();
     const updated = Object.assign({}, current, body);
 
     try {
