@@ -298,26 +298,33 @@
   var av = $('#actview'), avGrid = $('#actview-grid'), avOpener = null;
   var actPhotos = CFG.activityPhotos || {};
 
-  $$('.act[data-act]').forEach(function (card) {
-    var photos = actPhotos[card.dataset.act] || [];
-    var btn = $('.act__more', card);
-    if (!photos.length) { btn.hidden = true; return; }
-    btn.addEventListener('click', function () {
-      avOpener = btn;
-      var title = $('h3', card).textContent;
-      $('#actview-title').textContent = title;
-      $('#actview-desc').textContent = $('p', card).textContent;
-      avGrid.innerHTML = '';
-      photos.forEach(function (src, i) {
-        var img = document.createElement('img');
-        img.src = src;
-        img.alt = title + ' – ' + (i + 1);
-        img.loading = 'lazy';
-        avGrid.appendChild(img);
+  function bindActCards() {
+    $$('.act[data-act]').forEach(function (card) {
+      var id = card.dataset.act;
+      var photos = actPhotos[id] || [];
+      var btn = $('.act__more', card);
+      if (!btn) return;
+      btn.hidden = !photos.length;
+      btn.onclick = null;
+      if (!photos.length) return;
+      btn.addEventListener('click', function () {
+        avOpener = btn;
+        var title = $('h3', card).textContent;
+        $('#actview-title').textContent = title;
+        $('#actview-desc').textContent = $('p', card).textContent;
+        avGrid.innerHTML = '';
+        photos.forEach(function (src, i) {
+          var img = document.createElement('img');
+          img.src = src;
+          img.alt = title + ' – ' + (i + 1);
+          img.loading = 'lazy';
+          avGrid.appendChild(img);
+        });
+        if (typeof av.showModal === 'function') av.showModal(); else av.setAttribute('open', '');
       });
-      if (typeof av.showModal === 'function') av.showModal(); else av.setAttribute('open', '');
     });
-  });
+  }
+  bindActCards();
   $('.actview__close').addEventListener('click', function () { av.close(); });
   av.addEventListener('click', function (e) { if (e.target === av) av.close(); });
   av.addEventListener('close', function () { if (avOpener) avOpener.focus(); });
@@ -498,6 +505,94 @@
       }
     });
   }
+
+  /* ------------------------------------------------------------------
+     Load live data from admin API and update public site
+     ------------------------------------------------------------------ */
+  (function loadLiveData() {
+    fetch('/api/admin-data')
+      .then(function(r) { return r.json(); })
+      .catch(function() { return null; })
+      .then(function(data) {
+        if (!data) return;
+
+        // Update activities
+        if (data.activities && data.activities.length) {
+          data.activities.forEach(function(act) {
+            var card = document.querySelector('.act[data-act="' + act.id + '"]');
+            if (!card) return;
+            var h3 = card.querySelector('h3');
+            var p = card.querySelector('p');
+            if (h3) h3.textContent = act.title;
+            if (p) p.textContent = act.desc;
+            var colorMap = { purple:'var(--purple)', magenta:'var(--magenta)', sky:'var(--sky)', teal:'var(--teal)', green:'var(--green)', orange:'#E8650A', red:'#C0392B', indigo:'#3D3B8E', cyan:'#0891B2', yellow:'#B45309' };
+            if (act.color && colorMap[act.color]) card.style.setProperty('--c', colorMap[act.color]);
+            if (act.photos) actPhotos[act.id] = act.photos;
+          });
+          bindActCards();
+        }
+
+        // Update services
+        if (data.services && data.services.length) {
+          var svcGrid = document.querySelector('.svc-grid');
+          if (svcGrid) {
+            svcGrid.innerHTML = '';
+            data.services.forEach(function(svc) {
+              var isDone = svc.status === 'done';
+              var tagHtml = isDone
+                ? '<span class="tag tag--done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Completed</span>'
+                : '<span class="tag tag--soon"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>Upcoming</span>';
+              var art = document.createElement('article');
+              art.className = 'svc';
+              art.setAttribute('data-reveal', '');
+              art.innerHTML =
+                '<div class="svc__media"><img src="' + (svc.coverPhoto || 'assets/img/logo.png') + '" alt="" width="1010" height="253" loading="lazy"></div>' +
+                '<div class="svc__body">' +
+                  '<div class="svc__meta">' + tagHtml + '<span class="svc__loc"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>' + (svc.location || '') + '</span></div>' +
+                  '<h3>' + svc.title + '</h3>' +
+                  '<p>' + svc.desc + '</p>' +
+                  '<a class="link-arrow" href="' + (svc.actionLink || '#donate') + '">' +
+                    '<span>' + (svc.actionLabel || 'Support this') + '</span>' +
+                    '<svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>' +
+                  '</a>' +
+                '</div>';
+              svcGrid.appendChild(art);
+            });
+          }
+        }
+
+        // Update gallery
+        if (data.gallery && data.gallery.length) {
+          var galGrid = document.querySelector('.gal-grid');
+          if (galGrid) {
+            galGrid.innerHTML = '';
+            data.gallery.forEach(function(item, i) {
+              var li = document.createElement('li');
+              li.className = 'gal' + (i === 0 ? ' gal--wide' : '');
+              li.setAttribute('data-reveal', '');
+              li.style.setProperty('--d', String(i));
+              li.innerHTML =
+                '<button type="button" class="gal__btn" data-full="' + item.src + '">' +
+                  '<img src="' + item.src + '" alt="' + (item.cap || '') + '" loading="lazy">' +
+                  '<span class="gal__cap"><span>' + (item.cap || '') + '</span>' +
+                  '<svg class="ic" aria-hidden="true"><use href="#i-zoom"/></svg></span>' +
+                '</button>';
+              galGrid.appendChild(li);
+            });
+            // hide view-more button since all shown
+            var moreWrap = document.querySelector('.gal-more');
+            if (moreWrap) moreWrap.hidden = true;
+          }
+        }
+
+        // Update logo
+        if (data.logo) {
+          document.querySelectorAll('.brand img, .footer__logo img, .cta__logo, .donate__head img').forEach(function(img) {
+            img.src = data.logo;
+          });
+        }
+      });
+  })();
 
   /* ------------------------------------------------------------------
      Init language last (so bank labels render in the right language)

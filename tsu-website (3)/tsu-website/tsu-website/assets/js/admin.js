@@ -85,6 +85,7 @@
   async function loadData() {
     var r = await fetch(API+'/admin-data');
     siteData = await r.json();
+    if (!siteData.gallery) siteData.gallery = [];
     renderActivities();
     renderServices();
     renderGallery();
@@ -124,9 +125,7 @@
       var card = document.createElement('div');
       card.className = 'admin-card';
       card.innerHTML =
-        '<div class="act-card-ic" style="background:' + color + '20;border:2px solid ' + color + '">' +
-          '<img src="' + esc(thumb) + '" alt="" style="width:40px;height:40px;object-fit:contain;border-radius:6px">' +
-        '</div>' +
+        '<img class="admin-card__thumb" src="' + esc(thumb) + '" alt="">' +
         '<div class="admin-card__body">' +
           '<h3>' + esc(act.title) + '</h3>' +
           '<p>' + esc(act.desc) + '</p>' +
@@ -305,13 +304,15 @@
 
   $('#svc-cover-upload').addEventListener('change', async function() {
     var file = this.files[0]; if (!file) return;
+    var btn = $('#save-service-btn');
+    setLoading(btn, true);
     try {
       var url = await uploadToCloudinary(file, 'tsu/services');
       var prev = $('#svc-cover-preview');
       prev.src = url; prev.style.display = '';
       toast('Cover uploaded');
     } catch(ex) { toast(ex.message, true); }
-    this.value = '';
+    finally { setLoading(btn, false); this.value = ''; }
   });
 
   $('#save-service-btn').addEventListener('click', async function() {
@@ -370,40 +371,38 @@
   ];
 
   function getGallery() {
-    return siteData.gallery && siteData.gallery.length ? siteData.gallery : GALLERY_DEFAULT;
+    return siteData.gallery && siteData.gallery.length ? siteData.gallery : GALLERY_DEFAULT.slice();
   }
 
   function renderGallery() {
     var grid = $('#gallery-grid');
     if (!grid) return;
-    var items = getGallery();
+    // If gallery is empty, show defaults but don't allow editing them as persisted data
+    var items = siteData.gallery && siteData.gallery.length ? siteData.gallery : GALLERY_DEFAULT;
+    var isDefault = !(siteData.gallery && siteData.gallery.length);
     grid.innerHTML = '';
     items.forEach(function(item, i) {
       var div = document.createElement('div');
       div.className = 'gal-admin-item';
       div.innerHTML =
         '<img src="' + esc(item.src) + '" alt="' + esc(item.cap) + '">' +
-        '<input class="gal-cap-input" data-i="' + i + '" value="' + esc(item.cap) + '" placeholder="Caption...">' +
-        '<button class="photo-item__del gal-del" data-i="' + i + '" title="Delete">✕</button>';
+        '<input class="gal-cap-input" data-i="' + i + '" value="' + esc(item.cap) + '" placeholder="Caption..."' + (isDefault ? ' disabled title="Add a photo to enable editing"' : '') + '>' +
+        '<button class="photo-item__del gal-del" data-i="' + i + '" title="Delete"' + (isDefault ? ' disabled' : '') + '>✕</button>';
       grid.appendChild(div);
     });
-    // Save caption on blur
+    if (isDefault) return; // don't bind save/delete on default items
     grid.querySelectorAll('.gal-cap-input').forEach(function(inp) {
       inp.addEventListener('blur', async function() {
-        var items = getGallery();
-        items[parseInt(inp.dataset.i)].cap = inp.value.trim();
-        siteData.gallery = items;
-        await saveData({ gallery: items });
+        siteData.gallery[parseInt(inp.dataset.i)].cap = inp.value.trim();
+        await saveData({ gallery: siteData.gallery });
         toast('Caption saved');
       });
     });
     grid.querySelectorAll('.gal-del').forEach(function(btn) {
       btn.addEventListener('click', async function() {
         if (!confirm('Remove this photo from gallery?')) return;
-        var items = getGallery();
-        items.splice(parseInt(btn.dataset.i), 1);
-        siteData.gallery = items;
-        await saveData({ gallery: items });
+        siteData.gallery.splice(parseInt(btn.dataset.i), 1);
+        await saveData({ gallery: siteData.gallery });
         renderGallery();
         toast('Photo removed');
       });
@@ -413,8 +412,9 @@
   $('#gal-upload').addEventListener('change', async function() {
     var files = Array.from(this.files);
     if (!files.length) return;
+    var btn = document.querySelector('#tab-gallery .btn--primary');
     try {
-      var items = getGallery().slice();
+      var items = (siteData.gallery && siteData.gallery.length ? siteData.gallery : []).slice();
       for (var f of files) {
         var url = await uploadToCloudinary(f, 'tsu/gallery');
         items.push({ src: url, cap: f.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ') });
@@ -431,29 +431,6 @@
     var btn = e.target.closest('.gal-del');
     if (btn) return; // handled above
   });
-
-  // Re-attach gallery upload after any re-render
-  function attachGalUpload() {
-    var inp = document.getElementById('gal-upload');
-    if (inp) inp.addEventListener('change', handleGalUpload);
-  }
-  async function handleGalUpload() {
-    var files = Array.from(this.files);
-    if (!files.length) return;
-    try {
-      var items = getGallery().slice();
-      for (var f of files) {
-        var url = await uploadToCloudinary(f, 'tsu/gallery');
-        items.push({ src: url, cap: f.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ') });
-      }
-      siteData.gallery = items;
-      await saveData({ gallery: items });
-      renderGallery();
-      toast(files.length + ' photo(s) added to gallery');
-    } catch(ex) { toast(ex.message, true); }
-    this.value = '';
-  }
-  attachGalUpload();
 
   /* ── Modal backdrop / Escape ── */
   ['modal-activity','modal-service'].forEach(function(id) {
