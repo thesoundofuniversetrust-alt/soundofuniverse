@@ -558,6 +558,10 @@
                 '</div>';
               svcGrid.appendChild(art);
             });
+            // Elements injected after IntersectionObserver runs — mark visible immediately
+            svcGrid.querySelectorAll('[data-reveal]').forEach(function(el) {
+              el.classList.add('is-visible');
+            });
           }
         }
 
@@ -578,6 +582,10 @@
                   '<svg class="ic" aria-hidden="true"><use href="#i-zoom"/></svg></span>' +
                 '</button>';
               galGrid.appendChild(li);
+            });
+            // Mark visible immediately — injected after IntersectionObserver already ran
+            galGrid.querySelectorAll('[data-reveal]').forEach(function(el) {
+              el.classList.add('is-visible');
             });
             // hide view-more button since all shown
             var moreWrap = document.querySelector('.gal-more');
